@@ -1,7 +1,7 @@
 +A Educação - Engenheiro de Inteligência Artificial
 ===================
 
-[![N|Solid](https://maisaedu.com.br/hubfs/site-grupo-a/logo-mais-a-educacao.svg)](https://maisaedu.com.br/) 
+[![N|Solid](https://maisaedu.com.br/hubfs/site-grupo-a/logo-mais-a-educacao.svg)](https://maisaedu.com.br/)
 
 O objetivo deste desafio é avaliar as competências técnicas dos candidatos a Engenheiro de Inteligência Artificial na Maior Plataforma de Educação do Brasil.
 
@@ -12,8 +12,8 @@ Neste teste prático, você será apresentado a um conjunto de dados simulado re
 O conjunto de dados definidos para este teste é de propriedade intelectual da +A Educação e deverá ser utilizado exclusivamente para esta finalidade, sendo composto por:
 
 - **Textos:** Uma coleção de textos extraídos de módulos de aprendizagem.
-- **PDFs:** Livros e manuais introdutórios sobre o conteúdo abordado.  
-- **Vídeos:** Pequenos vídeos de dicas de professor, que explicam o conteúdo abordado. Os vídeos estão em formatos .mp4 
+- **PDFs:** Livros e manuais introdutórios sobre o conteúdo abordado.
+- **Vídeos:** Pequenos vídeos de dicas de professor, que explicam o conteúdo abordado. Os vídeos estão em formatos .mp4
 
 O conjunto de dados pode ser obtido [clicando aqui](https://github.com/grupo-a/challenge-artificial-intelligence/tree/main/resources).
 
