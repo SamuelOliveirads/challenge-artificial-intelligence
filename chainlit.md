@@ -1,14 +1,23 @@
-# Welcome to Chainlit! 🚀🤖
+## Chainlit Assistente de Aprendizado Interativo
 
-Hi there, Developer! 👋 We're excited to have you on board. Chainlit is a powerful tool designed to help you prototype, debug and share applications built on top of LLMs.
+Bem-vindo ao assistente de aprendizado interativo da +A Educação! Este assistente é projetado para ajudá-lo a identificar suas dificuldades e lacunas de conhecimento em temas específicos e fornecer conteúdos adaptados ao seu nível de conhecimento e formato de preferência.
 
-## Useful Links 🔗
+### Funcionalidades
 
-- **Documentation:** Get started with our comprehensive [Chainlit Documentation](https://docs.chainlit.io) 📚
-- **Discord Community:** Join our friendly [Chainlit Discord](https://discord.gg/k73SQ3FyUh) to ask questions, share your projects, and connect with other developers! 💬
+Durante o diálogo, o assistente irá:
+1. **Avaliar Conhecimento**: Entender áreas onde seu conhecimento pode ser insuficiente.
+2. **Perguntar Preferências**: Identificar suas preferências de aprendizado (texto, vídeo, áudio).
+3. **Fornecer Sugestões**: Oferecer conteúdos adaptados às suas necessidades e preferências.
 
-We can't wait to see what you create with Chainlit! Happy coding! 💻😊
+### Como Funciona
 
-## Welcome screen
+1. **Faça uma Pergunta**: Digite sua pergunta sobre o tema que deseja aprender.
+2. **Receba Recomendações**: O assistente fornecerá respostas e sugerirá materiais de estudo com base nas informações fornecidas.
+3. **Ajuste Preferências**: Informe ao assistente suas preferências de formato de aprendizado.
 
-To modify the welcome screen, edit the `chainlit.md` file at the root of your project. If you do not want a welcome screen, just leave this file empty.
+### Exemplo de Uso
+
+- **Pergunta do Usuário**: "Como posso aprender os fundamentos de programação?"
+- **Resposta do Assistente**: O assistente fornecerá conteúdos relevantes sobre os fundamentos de programação, recomendando o formato mais adequado (por exemplo, vídeos, textos ou exercícios).
+
+Esperamos que você aproveite esta ferramenta para aprimorar seu aprendizado e alcançar seus objetivos educacionais com a +A Educação!
