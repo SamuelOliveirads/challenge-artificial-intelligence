@@ -7,6 +7,7 @@ from typing import List, Tuple
 import assemblyai as aai
 import nest_asyncio
 import pytesseract
+from dotenv import load_dotenv
 from langchain.docstore.document import Document as LangchainDocument
 from langchain.document_loaders import (
     AssemblyAIAudioTranscriptLoader,
@@ -22,13 +23,18 @@ from PIL import Image
 
 from utils import load_from_file, save_to_file
 
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
-os.environ["LANGCHAIN_API_KEY"] = ""
+load_dotenv()
 
-os.environ["OPENAI_API_KEY"] = "sk-proj-"
-os.environ["LLAMA_CLOUD_API_KEY"] = "llx-"
-aai.settings.api_key = ""
+langchain_tracing_v2 = os.getenv("LANGCHAIN_TRACING_V2")
+langchain_endpoint = os.getenv("LANGCHAIN_ENDPOINT")
+langchain_api_key = os.getenv("LANGCHAIN_API_KEY")
+
+openai_api_key = os.getenv("OPENAI_API_KEY")
+llama_cloud_api_key = os.getenv("LLAMA_CLOUD_API_KEY")
+aai_api_key = os.getenv("AAI_API_KEY")
+
+os.environ["OPENAI_API_KEY"] = openai_api_key
+aai.settings.api_key = aai_api_key
 
 logs = logging.basicConfig(level=logging.INFO)
 

@@ -1,6 +1,7 @@
 import os
 from typing import List, Optional, Tuple
 
+from dotenv import load_dotenv
 from langchain.chains.llm import LLMChain
 from langchain.docstore.document import Document as LangchainDocument
 from langchain.prompts import PromptTemplate
@@ -8,7 +9,10 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain_community.vectorstores import Chroma
 from langchain_core.output_parsers import StrOutputParser
 
-os.environ["OPENAI_API_KEY"] = "sk-proj-"
+load_dotenv()
+
+openai_api_key = os.getenv("OPENAI_API_KEY")
+os.environ["OPENAI_API_KEY"] = openai_api_key
 
 
 class StudyJourney:
