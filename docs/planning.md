@@ -1,5 +1,3 @@
-Claro, aqui está o planejamento baseado no layout fornecido, incorporando as sugestões e melhorias mencionadas:
-
 # Planejamento
 
 - **Output**:
