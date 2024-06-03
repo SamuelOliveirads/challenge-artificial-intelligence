@@ -1,25 +1,41 @@
+import logging
 import os
-from typing import List, Optional, Tuple
+import uuid
+from typing import Optional, Tuple
 
 from dotenv import load_dotenv
 from langchain.chains.llm import LLMChain
-from langchain.docstore.document import Document as LangchainDocument
+from langchain.memory import ChatMessageHistory
 from langchain.prompts import PromptTemplate
 from langchain_community.chat_models import ChatOpenAI
-from langchain_community.vectorstores import Chroma
 from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables.history import RunnableWithMessageHistory
+
+from src.llm.dinamic_state import (
+    ContentRetrievalManager,
+    ConversationCoordinator,
+    StateController,
+)
 
 load_dotenv()
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
 os.environ["OPENAI_API_KEY"] = openai_api_key
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 class StudyJourney:
-    def __init__(self, llm_type="gpt-3.5-turbo"):
+    def __init__(self, retriever, llm_type="gpt-3.5-turbo"):
         self.llm = ChatOpenAI(model_name=llm_type, temperature=0)
+        self.session_id = str(uuid.uuid4())
+        self.history = ChatMessageHistory()
+        self.document_manager = ContentRetrievalManager(retriever)
+        self.chatbot = ConversationCoordinator(self.document_manager)
+        self.state_agent = StateController(self.chatbot)
 
-        self.intro_prompt_template = PromptTemplate(
+        self.main_prompt_template = PromptTemplate(
             template="""
         Você é um assistente de aprendizado interativo da +A Educação. Seu objetivo é
         ajudar os usuários a se familiarizarem com o sistema e entenderem como você
@@ -36,100 +52,42 @@ class StudyJourney:
             input_variables=["question"],
         )
 
-        self.main_prompt_template = PromptTemplate(
-            template="""
-        Você é um assistente de aprendizado interativo da +A Educação. Seu objetivo é
-        ajudar os usuários a identificar suas dificuldades e lacunas de conhecimento em
-        um tema específico e fornecer conteúdos adaptados ao seu nível de conhecimento
-        e formato de preferência.
-
-        Durante o diálogo, você deve:
-        1. Avaliar e entender as áreas onde o conhecimento do usuário pode ser insuficiente.
-        2. Perguntar sobre as preferências de aprendizado do usuário (texto, vídeo, áudio).
-        3. Fornecer respostas e sugestões de conteúdos adaptados às preferências e
-        necessidades do usuário, usando exatamente o que estiver em: \n\n {document} \n\n.
-
-        Aqui está a questão do usuário: {question}
-
-        Responda de maneira clara e direta com base nas informações fornecidas e adapte suas
-        respostas conforme as preferências de aprendizado do usuário.
-        Caso não tenha a informação, informe que não possui informação sobre o tema e
-        sugira uma nova pergunta ao usuário.
-        """,
-            input_variables=["question", "document"],
-        )
-
-        self.end_prompt_template = PromptTemplate(
-            template="""
-        Você é um assistente de aprendizado interativo da +A Educação. Seu objetivo é
-        garantir que o usuário não tenha mais dúvidas pendentes e se despedir de maneira cordial.
-
-        Pergunte ao usuário se ele tem mais alguma dúvida. Se não, agradeça pela interação
-        e deseje ótimos estudos, caso o usuário agradeça também o agradeça.
-
-        Aqui está a questão do usuário: {question}
-        """,
-            input_variables=["question"],
-        )
-
-        self.intro_chain = LLMChain(
-            prompt=self.intro_prompt_template,
-            llm=self.llm,
-            output_parser=StrOutputParser(),
-        )
         self.main_chain = LLMChain(
             prompt=self.main_prompt_template,
             llm=self.llm,
             output_parser=StrOutputParser(),
         )
-        self.end_chain = LLMChain(
-            prompt=self.end_prompt_template,
-            llm=self.llm,
-            output_parser=StrOutputParser(),
+        self.chain_with_history = RunnableWithMessageHistory(
+            self.main_chain,
+            get_session_history=lambda session_id: self.history,
+            input_messages_key="question",
+            history_messages_key="chat_history",
         )
 
-    def format_docs(self, docs: List[LangchainDocument]) -> str:
-        """
-        Format documents into a structured string.
+    def add_to_history(self, sender: str, message: str):
+        if sender == "user":
+            self.history.add_user_message(message)
+        else:
+            self.history.add_ai_message(message)
 
-        This function formats a list of documents into a structured string,
-        including the source and type of each document (e.g., Vídeo, PDF,
-        Texto, Exercício, Imagem).
-
-        Parameters
-        ----------
-        docs : List[LangchainDocument]
-            The list of documents to be formatted.
-
-        Returns
-        -------
-        str
-            A formatted string representing the documents.
-        """
-        formatted_docs = ""
-        for i, doc in enumerate(docs):
-            source = doc.metadata.get("source", "Desconhecido")
-            if source.endswith(".mp4"):
-                format_type = "Vídeo"
-            elif source.endswith(".pdf"):
-                format_type = "PDF"
-            elif source.endswith(".txt"):
-                format_type = "Texto"
-            elif source.endswith(".json"):
-                format_type = "Exercício"
-            elif source.endswith(".jpg") or source.endswith(".png"):
-                format_type = "Imagem"
-            else:
-                format_type = "Desconhecido"
-
-            formatted_docs += (
-                f"Documento {i+1} ({format_type}):" f"\n{doc.page_content}\n\n"
+    def run_interaction(self, question: str, document: str) -> Optional[str]:
+        """Executes the interaction with the LLM, processing the given question and document details."""
+        try:
+            response = self.chain_with_history.invoke(
+                {"question": question, "document": document},
+                {"configurable": {"session_id": self.session_id}},
             )
-        return formatted_docs
+        except AttributeError as e:
+            logging.error(f"Error during LLM interaction: {str(e)}")
+            response = "No response available."
+            raise
+        return response
 
-    def get_answer(
-        self, question: str, retriever: Chroma, stage: str = "main"
-    ) -> Tuple[str, Optional[str]]:
+    def update_prompt(self, next_prompt: PromptTemplate):
+        self.main_prompt_template = next_prompt
+        self.main_chain.prompt = self.main_prompt_template
+
+    def get_answer(self, question: str) -> Tuple[str, Optional[str]]:
         """
         Get an answer from the LLM based on the stage of interaction.
 
@@ -151,16 +109,13 @@ class StudyJourney:
             A tuple containing the response message and the formatted documents
             (if applicable).
         """
-        if stage == "intro":
-            message = self.intro_chain.run(question=question)
-            rag_content = None
-        elif stage == "main":
-            retrieved_docs = retriever.get_relevant_documents(question)
-            formatted_docs = self.format_docs(retrieved_docs)
-            message = self.main_chain.run(question=question, document=formatted_docs)
-            rag_content = formatted_docs
-        elif stage == "end":
-            message = self.end_chain.run(question=question)
-            rag_content = None
+        self.add_to_history("user", question)
+        retrieved_docs = self.document_manager.get_product_details(question)
+        formatted_docs = self.document_manager.format_docs(retrieved_docs)
+        next_prompt = self.state_agent.handle_input(self.history)
+        self.update_prompt(next_prompt)
+        response = self.run_interaction(question, formatted_docs)
+        response_text = response.get("text", "Sem resposta disponível.")
+        self.add_to_history("ai", response_text)
 
-        return message, rag_content
+        return response

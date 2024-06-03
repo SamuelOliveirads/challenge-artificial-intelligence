@@ -101,5 +101,4 @@ O projeto entrega todas as etapas inicialmente propostas no planejamento, como i
 
 Algumas considerações para pontos de melhorias incluem:
 - **Tratamento de Dados**: Limpar as fontes de diferentes informações ajudará o modelo a identificar e entregar melhores respostas.
-- **Inclusão de Agentes**: Adicionar agentes que entendam diferentes momentos do usuário, como situações de dúvidas, introdução e conclusão da conversa, isso atualmente é feito via inferência dos dados resgatados do RAG.
 - **Feedback**: Coletar feedback sobre a qualidade das respostas, incluindo testes A/B para avaliar a eficácia das mudanças.
